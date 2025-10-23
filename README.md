@@ -16,7 +16,20 @@ Users simply input the ingredients they want to use, and the app will call the *
 
 ## 🛠️ Installation
 
-1. **Clone the repository**
 ```bash
+# Clone the repository
 git clone https://github.com/yourusername/recipenow.git
 cd recipenow
+
+# Create venv
+python3 -m venv venv
+
+# Activate venv（Mac/Linux）
+source venv/bin/activate
+
+# install dependencies
+pip install -r requirements.txt
+
+# load
+./venv/bin/uvicorn main:app --reload
+```
