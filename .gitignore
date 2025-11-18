@@ -29,3 +29,6 @@ build/
 
 # Pydantic cache
 __pydantic__/
+
+# 密码
+backend/keys/*.json

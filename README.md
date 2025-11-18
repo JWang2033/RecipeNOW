@@ -17,6 +17,12 @@ Users simply input the ingredients they want to use, and the app will call the *
 ## 🛠️ Installation
 
 ```bash
+
+# Clone API Keys
+mkdir -p backend/keys
+#拖入下载的scan-ingredients.json
+
+
 # Clone the repository
 git clone https://github.com/yourusername/recipenow.git
 cd recipenow
@@ -28,7 +34,8 @@ python3 -m venv venv
 source venv/bin/activate
 
 # install dependencies
-pip install -r requirements.txt
+./venv/bin/pip install -r requirements.txt
+#自己电脑装的pip
 
 # load
 ./venv/bin/uvicorn main:app --reload
@@ -38,18 +45,21 @@ pip install -r requirements.txt
 <!-- tree:start -->
 ```
 .
+├── README.md
 ├── backend
+│   ├── keys
+│   │   └── scan-ingredients.json
 │   └── routers
-│       ├── deepseek_router.py
+│       ├── __init__.py
 │       ├── generate_rec_router.py
 │       ├── scan_router.py
-│       └── shopping_list_router.py
+│       ├── shopping_list_router.py
+│       └── test_api_router.py
 ├── frontend
 ├── main.py
 ├── project_structure.txt
-├── README.md
 └── requirements.txt
 
-4 directories, 8 files
+5 directories, 10 files
 ```
 <!-- tree:end -->

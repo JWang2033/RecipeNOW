@@ -8,3 +8,11 @@ pymysql
 python-jose[cryptography]
 passlib[bcrypt]
 pytesseract
+
+python-dotenv
+requests
+Pillow              # 如果后续你需要处理图片，可选但建议加
+
+google-cloud-aiplatform
+google-auth
+google-genai>=0.3.0
