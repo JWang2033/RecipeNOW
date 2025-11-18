@@ -33,3 +33,23 @@ pip install -r requirements.txt
 # load
 ./venv/bin/uvicorn main:app --reload
 ```
+
+## 📝 File Structure
+<!-- tree:start -->
+```
+.
+├── backend
+│   └── routers
+│       ├── deepseek_router.py
+│       ├── generate_rec_router.py
+│       ├── scan_router.py
+│       └── shopping_list_router.py
+├── frontend
+├── main.py
+├── project_structure.txt
+├── README.md
+└── requirements.txt
+
+4 directories, 8 files
+```
+<!-- tree:end -->
