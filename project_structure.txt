@@ -1,0 +1,14 @@
+.
+├── backend
+│   └── routers
+│       ├── deepseek_router.py
+│       ├── generate_rec_router.py
+│       ├── scan_router.py
+│       └── shopping_list_router.py
+├── frontend
+├── main.py
+├── project_structure.txt
+├── README.md
+└── requirements.txt
+
+4 directories, 8 files
