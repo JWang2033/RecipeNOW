@@ -101,7 +101,7 @@ async def test_vertex(file: UploadFile = File(...)):
     image_b64 = base64.b64encode(image_bytes).decode("utf-8")
 
     # 3. 调用 Vertex Gemini 模型（注意模型名带版本号）
-    model = "gemini-1.5-flash-001"
+    model = "gemini-2.5-flash"
     url = (
         f"https://{location}-aiplatform.googleapis.com/v1/"
         f"projects/{project_id}/locations/{location}/publishers/google/"
