@@ -45,7 +45,6 @@ source venv/bin/activate
 <!-- tree:start -->
 ```
 .
-├── README.md
 ├── backend
 │   ├── keys
 │   │   └── scan-ingredients.json
@@ -58,6 +57,7 @@ source venv/bin/activate
 ├── frontend
 ├── main.py
 ├── project_structure.txt
+├── README.md
 └── requirements.txt
 
 5 directories, 10 files

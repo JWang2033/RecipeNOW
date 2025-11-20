@@ -66,9 +66,6 @@ async def test_deepseek(body: DeepSeekTestRequest):
 
 
 # ---------- Vertex AI（Gemini）食品识别 ----------
-
-
-
 @router.post("/vertex")
 async def test_vertex(file: UploadFile = File(...)):
     """
