@@ -1,11 +1,11 @@
 # backend/routers/shopping_list_router.py
 import os
 import json
-from typing import List, Optional
+from typing import List, Any
 
 import requests
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+
 from google.oauth2 import service_account
 from google.auth.transport.requests import Request as GoogleAuthRequest
 
@@ -13,11 +13,11 @@ from google.auth.transport.requests import Request as GoogleAuthRequest
 router = APIRouter(prefix="/shopping-list", tags=["Shopping List"])
 
 
-# ---------- 公共工具（可以和 scan_ingredients_router 复用） ----------
+# ---------- Shared utilities ----------
 def _get_vertex_access_token() -> str:
     cred_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
     if not cred_path:
-        raise HTTPException(status_code=500, detail="GOOGLE_APPLICATION_CREDENTIALS 未配置")
+        raise HTTPException(status_code=500, detail="GOOGLE_APPLICATION_CREDENTIALS is not set")
 
     try:
         scopes = ["https://www.googleapis.com/auth/cloud-platform"]
@@ -27,12 +27,12 @@ def _get_vertex_access_token() -> str:
         creds.refresh(GoogleAuthRequest())
         return creds.token
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"获取 Google access token 失败: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get Google access token: {e}")
 
 
 def _extract_json_from_text(text: str) -> str:
     """
-    去掉 ```json ... ``` / ``` ... ``` 外壳，返回纯 JSON 字符串。
+    Remove ```json ... ``` / ``` ... ``` wrappers and return the pure JSON string.
     """
     text = text.strip()
     if text.startswith("```"):
@@ -46,63 +46,51 @@ def _extract_json_from_text(text: str) -> str:
     return text
 
 
-# ---------- 数据模型 ----------
-class Ingredient(BaseModel):
-    name: str
-    quantity: Optional[float] = None  # 数量（可以是 1.5、2 等）
-    unit: Optional[str] = None        # 单位（g, kg, ml, L, 个, 片, 勺 等）
-    notes: Optional[str] = None       # 额外描述：如“大个鸡蛋”“切丁”等
-
-
-class ShoppingListItem(BaseModel):
-    name: str                       # 统一后的购买名称（中文）
-    quantity: Optional[float] = None
-    unit: Optional[str] = None
-    reason: Optional[str] = None    # 简短说明：为什么要买、买多少
-    matched_existing: List[str] = []  # 被认为是同类的已有食材名称
-    matched_recipe: List[str] = []    # 被认为是同类的菜谱食材名称
-
-
-class ShoppingListRequest(BaseModel):
-    pantry_ingredients: List[Ingredient]
-    recipe_ingredients: List[Ingredient]
-
-
-class ShoppingListResponse(BaseModel):
-    to_buy: List[ShoppingListItem]
-    shopping_list_raw: str  # 模型原始返回文本（JSON 字符串）
-    raw_vertex: dict        # 完整 Vertex 响应（调试用）
-
-
-# ---------- 主接口：生成购物清单 ----------
-@router.post("/generate", response_model=ShoppingListResponse)
-async def generate_shopping_list(body: ShoppingListRequest):
+# ---------- Main endpoint: generate shopping list ----------
+@router.post("/generate")
+async def generate_shopping_list(body: dict) -> dict:
     """
-    根据【已有食材】和【菜谱所需食材】生成需要购买的购物清单。
-
-    - pantry_ingredients：例如扫描自冰箱/厨房或用户手动输入
-    - recipe_ingredients：菜谱生成/解析后的完整用料列表
-
-    Vertex 负责：
-    - 识别同一个食材的不同名称（“鸡蛋”“大鸡蛋”“Eggs”等）
-    - 合并重复项
-    - 按数量对比算出缺口
-    - 输出最终需要购买的食材列表
+    Simplified version:
+    - Input: raw JSON body with keys:
+        {
+          "pantry_ingredients": [...],
+          "recipe_ingredients": [...]
+        }
+      Each ingredient can be any dict you like, we just serialize it for the model.
+    - Output:
+        {
+          "to_buy": [...],              # parsed JSON array from Vertex
+          "shopping_list_raw": "text",  # raw text from Vertex
+          "raw_vertex": {...}           # full Vertex response (for debugging)
+        }
     """
     project_id = os.getenv("GCP_PROJECT_ID")
     location = os.getenv("GCP_LOCATION", "us-central1")
     if not project_id:
-        raise HTTPException(status_code=500, detail="GCP_PROJECT_ID 未配置")
+        raise HTTPException(status_code=500, detail="GCP_PROJECT_ID is not set")
 
+    # ---- 1. 取输入 & 基础校验 ----
+    if "pantry_ingredients" not in body or "recipe_ingredients" not in body:
+        raise HTTPException(
+            status_code=400,
+            detail="Request JSON must contain 'pantry_ingredients' and 'recipe_ingredients'.",
+        )
+
+    pantry_ingredients = body["pantry_ingredients"]
+    recipe_ingredients = body["recipe_ingredients"]
+
+    if not isinstance(pantry_ingredients, list) or not isinstance(recipe_ingredients, list):
+        raise HTTPException(
+            status_code=400,
+            detail="'pantry_ingredients' and 'recipe_ingredients' must both be arrays.",
+        )
+
+    # ---- 2. 获取 access token ----
     access_token = _get_vertex_access_token()
 
-    # 1. 准备模型输入（直接把两个列表作为 JSON 字符串塞给模型）
-    pantry_json = body.pantry_ingredients
-    recipe_json = body.recipe_ingredients
-
-    # 转成字符串给模型看，方便它做「语义理解 + 数量比较」
-    pantry_str = json.dumps([item.dict() for item in pantry_json], ensure_ascii=False)
-    recipe_str = json.dumps([item.dict() for item in recipe_json], ensure_ascii=False)
+    # ---- 3. 序列化成字符串（让模型去理解）----
+    pantry_str = json.dumps(pantry_ingredients, ensure_ascii=False)
+    recipe_str = json.dumps(recipe_ingredients, ensure_ascii=False)
 
     model = "gemini-2.5-flash"
     url = (
@@ -111,55 +99,65 @@ async def generate_shopping_list(body: ShoppingListRequest):
         f"models/{model}:generateContent"
     )
 
-    prompt = f"""
-你是一个智能购物清单助手，需要根据“已有食材”和“菜谱所需食材”生成【需要购买】的食材列表。
+    prompt = """
+IMPORTANT: Your entire response MUST be in ENGLISH ONLY.
 
-输入格式：
-- pantry_ingredients：用户当前已有的食材列表（JSON 数组）
-- recipe_ingredients：菜谱所需的全部食材列表（JSON 数组）
-两者的每个元素结构为：
-{{
-  "name": "食材名称（中文为主，可能包含少量英文）",
-  "quantity": 数量 (可以为 null),
-  "unit": "单位 (可以为 null)",
-  "notes": "可选备注"
-}}
+- If the input ingredient names are in other languages, you MUST translate and normalize them to natural English cooking terms.
+- The JSON you return must not contain any non-English text.
 
-请你完成以下工作：
-1. 识别“实际是同一种食材”的不同写法或命名，如：
-   - "鸡蛋" vs "大鸡蛋" vs "Eggs"
-   - "洋葱" vs "紫洋葱"（如果菜谱要求特别指定品种，可以视情况认为是不同）
-   - "椰浆" vs "椰奶（罐装）"
-   需要你在语义上判断相似度，而不是单纯字符串匹配。
+You are an intelligent shopping list assistant.
 
-2. 对于每一种菜谱需要的食材：
-   - 如果用户【完全没有】对应食材，则应该出现在购物清单中。
-   - 如果用户【数量不足】（例如菜谱要 500g，家里只有 200g），则应出现在购物清单中，数量为“缺口数量”（300g）。
-   - 如果信息缺失（如某一边没有数量或单位），请基于常识做一个合理但保守的估计，或者只标注“需要补充一些”。
+Your task: given a list of **pantry ingredients** (what the user already has) and a list of **recipe ingredients** (what the recipe requires), you must generate a list of ingredients that the user still needs to buy.
 
-3. 合并重复项：
-   - 如果多个菜谱食材被你认为对应同一个购买项目（如“鸡蛋 2 个”和“鸡蛋（大）1 个”），请合并后给出一个统一的购买名称和总缺口数量。
-   - 对于被你合并到同一项的原始名称，请在返回结果中用数组记录。
+Input format:
+- pantry_ingredients: JSON array of ingredients the user already has
+- recipe_ingredients: JSON array of ingredients required by the recipe
 
-输出格式：
-请严格返回一个 JSON 数组（不要任何解释文字），每个元素代表一项“需要购买”的食材，结构为：
+Each ingredient object may look like:
+{
+  "name": "ingredient name (may be any language, but you must normalize to English in the OUTPUT)",
+  "quantity": number or null,
+  "unit": "unit string or null",
+  "notes": "optional notes, e.g. 'large', 'diced', etc."
+}
+
+Your tasks:
+
+1. Identify ingredients that are actually the same item even if named differently, for example:
+   - "egg" vs "large egg" vs "eggs"
+   - "onion" vs "red onion" (if the recipe explicitly requires a specific type, you may treat them as different when appropriate)
+   - "coconut milk" vs "canned coconut milk"
+   - Non-English names that refer to the same English ingredient should also be merged.
+   Use semantic understanding, not just string matching.
+
+2. For each ingredient required by the recipe:
+   - If the user has **none** of that ingredient in the pantry, it must appear in the shopping list.
+   - If the user has **insufficient quantity** (for example: recipe needs 500 g, pantry has 200 g), the shopping list should contain the **missing amount** (300 g).
+   - If quantity or unit information is missing on either side, use a reasonable and conservative estimate based on common sense, or simply mark that some extra amount should be bought.
+
+3. Merge duplicates:
+   - If several recipe ingredients should be treated as the same purchase item (e.g. "egg 2 pcs" and "large egg 1 pc"), merge them into a single shopping list item with a unified name and total missing quantity.
+   - For each unified item, you should track which original pantry and recipe ingredient names were matched into it.
+
+Output format:
+You must return **only** a JSON array. Each element represents one ingredient that needs to be purchased, with the structure:
 
 [
-  {{
-    "name": "统一后的购买名称（中文）",
-    "quantity": 数量 或 null,
-    "unit": "单位 或 null",
-    "reason": "简短说明为什么需要购买、以及大概买多少（中文）",
-    "matched_existing": ["匹配到的已有食材名称1", "已有食材名称2", ...],
-    "matched_recipe": ["匹配到的菜谱食材名称1", "菜谱食材名称2", ...]
-  }},
+  {
+    "name": "unified purchase name in English",
+    "quantity": number or null,
+    "unit": "unit string or null",
+    "reason": "short explanation in English why this needs to be bought and roughly how much",
+    "matched_existing": ["matched pantry ingredient name 1 (original input text)", "pantry ingredient name 2", ...],
+    "matched_recipe": ["matched recipe ingredient name 1 (original input text)", "recipe ingredient name 2", ...]
+  },
   ...
 ]
 
-要求：
-- 如果完全不需要购买任何东西，请返回 []。
-- 只返回 JSON，不要多余解释、不要注释、不要额外字段。
-- 字符串请使用中文为主。
+Requirements:
+- If the user does not need to buy anything, return an empty array: [].
+- All names and text in the OUTPUT must be in English only.
+- Return pure JSON only, with no extra explanations, comments, or additional fields.
     """.strip()
 
     payload = {
@@ -168,8 +166,8 @@ async def generate_shopping_list(body: ShoppingListRequest):
                 "role": "user",
                 "parts": [
                     {"text": prompt},
-                    {"text": "\n\n用户已有食材 pantry_ingredients:\n" + pantry_str},
-                    {"text": "\n\n菜谱所需食材 recipe_ingredients:\n" + recipe_str},
+                    {"text": "\n\npantry_ingredients (JSON):\n" + pantry_str},
+                    {"text": "\n\nrecipe_ingredients (JSON):\n" + recipe_str},
                 ],
             }
         ],
@@ -183,47 +181,37 @@ async def generate_shopping_list(body: ShoppingListRequest):
         "Content-Type": "application/json; charset=utf-8",
     }
 
+    # ---- 4. 调用 Vertex ----
     resp = requests.post(url, headers=headers, json=payload, timeout=60)
     if resp.status_code != 200:
         raise HTTPException(status_code=500, detail=resp.text)
 
-    data = resp.json()
+    data: dict = resp.json()
 
     try:
-        reply_text = data["candidates"][0]["content"]["parts"][0]["text"]
+        reply_text: str = data["candidates"][0]["content"]["parts"][0]["text"]
     except Exception:
         raise HTTPException(status_code=500, detail="Unexpected Vertex response")
 
-    # 2. 解析模型输出
+    # ---- 5. 把模型的 JSON 字符串解析出来 ----
     cleaned = _extract_json_from_text(reply_text)
     try:
-        raw_list = json.loads(cleaned)
+        to_buy: Any = json.loads(cleaned)
     except json.JSONDecodeError:
         raise HTTPException(
             status_code=500,
-            detail=f"无法解析 Vertex 购物清单 JSON：{cleaned[:200]}..."
+            detail=f"Failed to parse Vertex shopping list JSON: {cleaned[:200]}..."
         )
 
-    if not isinstance(raw_list, list):
-        raise HTTPException(status_code=500, detail="Vertex 返回的购物清单顶层应为数组")
-
-    to_buy: List[ShoppingListItem] = []
-    for item in raw_list:
-        if not isinstance(item, dict):
-            continue
-        to_buy.append(
-            ShoppingListItem(
-                name=item.get("name", "").strip(),
-                quantity=item.get("quantity"),
-                unit=item.get("unit"),
-                reason=item.get("reason"),
-                matched_existing=item.get("matched_existing") or [],
-                matched_recipe=item.get("matched_recipe") or [],
-            )
+    if not isinstance(to_buy, list):
+        raise HTTPException(
+            status_code=500,
+            detail="Vertex shopping list top-level JSON must be an array"
         )
 
-    return ShoppingListResponse(
-        to_buy=to_buy,
-        shopping_list_raw=reply_text,
-        raw_vertex=data,
-    )
+    # 不再做结构校验：直接把模型返回的数组塞回去
+    return {
+        "to_buy": to_buy,
+        "shopping_list_raw": reply_text,
+        "raw_vertex": data,
+    }
