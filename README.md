@@ -52,14 +52,20 @@ source venv/bin/activate
 │       ├── __init__.py
 │       ├── generate_rec_router.py
 │       ├── scan_router.py
-│       ├── shopping_list_router.py
-│       └── test_api_router.py
+│       └── shopping_list_router.py
 ├── frontend
 ├── main.py
 ├── project_structure.txt
+├── pytest.ini
 ├── README.md
-└── requirements.txt
+├── requirements.txt
+└── tests
+    ├── __init__.py
+    ├── conftest.py
+    ├── test_generate_rec_router.py
+    ├── test_scan_router.py
+    └── test_shopping_list_router.py
 
-5 directories, 10 files
+6 directories, 15 files
 ```
 <!-- tree:end -->
