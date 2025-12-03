@@ -48,11 +48,19 @@ source venv/bin/activate
 ├── backend
 │   ├── keys
 │   │   └── scan-ingredients.json
-│   └── routers
-│       ├── __init__.py
-│       ├── generate_rec_router.py
-│       ├── scan_router.py
-│       └── shopping_list_router.py
+│   ├── routers
+│   │   ├── __init__.py
+│   │   ├── generate_rec_router.py
+│   │   ├── scan_router.py
+│   │   └── shopping_list_router.py
+│   └── User
+│       ├── config.py
+│       ├── crud
+│       ├── database.py
+│       ├── models
+│       ├── routers
+│       ├── schemas
+│       └── utils
 ├── frontend
 ├── main.py
 ├── project_structure.txt
@@ -66,6 +74,6 @@ source venv/bin/activate
     ├── test_scan_router.py
     └── test_shopping_list_router.py
 
-6 directories, 15 files
+12 directories, 17 files
 ```
 <!-- tree:end -->

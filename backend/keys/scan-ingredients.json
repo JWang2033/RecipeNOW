@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "recipenow-478618",
+  "private_key_id": "7fd62542379bc8a8fdc4aa2a7e741434f9c81d13",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEuwIBADANBgkqhkiG9w0BAQEFAASCBKUwggShAgEAAoIBAQDz+w0VKDSjUOCw\n7LSnLbpk+tO4O8EGDAyXgJ+CZ7L5T0o3ERVm1FwgFGUMrXUd2TiPH3w8yLVSIk0A\nLGlYdm5Cw/fM5dvyNBu30i07Xk62vbM7dCLx7kZyMjBgZSN1NfjOa9tfXaHPTCYz\nwlxB5cxahAPPCuWTEG6IX3xVy2t9XYv9mGtFFX8vDaUqatuNygQfnL3uil6febsr\nPMT9z+A0dsiivk/A89t85r2DOnnGlrL5sgmLNm1E0W2BckYKLeJLerQ76o5Yo0aO\ng1OHlZmIpDl+W/M5DSgYDDJe8Qr6OGyJpZpNv1Cw2ohR3wvGUDAAMULqhhc/wNmW\nQ1H6KTiZAgMBAAECgf9UL0v/AOB+JGoN958IuxPrGUv0m1RUbH6WcstB3oY4Ks5w\n3HQwscBtUUbiGPf6/04vaa3J9iHv3+YHKUva5QJ8ByJ55iupEacpcQbVIAqzrhZ/\nbT3250C80T81WQXjFmcY0sk0dBphF5AW9qQ0GMFqeiLWTew+fRemoUvwTpXIVifU\n0RmZ4P1wJb+xvQFyKbQNcfdle4JAuC6zzJuZ8Gb8U/CerXzOuFY7OTbNYmOc477E\nSGhaLBNDiEbbVixHT91RN3eIgkKwBdqTWef2Qh1K/W+3CZvW9x9xMlrxwoyrFYv6\nrc5AVHU5LQ1xwcApPLFUjocz1gWNxQZDpYoDDgECgYEA+f9F2tNPp++QZYSgG6Io\nak0Hib4hSxEvYG2oqPonCMg5bworRVoecLs20OpCoTdthE/Q1cK0ckDnx+vNCuOW\nF+MaLOez6LOpAK5guB6QY/67XLF1PGwMrpx4aFGtLJctsk60Hy47iN2mWi39ONr9\nypu6uGQDVC3sYvzhFD3NtcECgYEA+dbLhJtfqOz6SruQsOVYtyU7TrsvY4nDx6V7\nD0LMkw1iRm0+rydwh+DomHpAtco/VF5ykZSX7TF82ZbEDty8Fd3/lZQKzp1k5m97\nDXYRi9nJxInWUbj7wMEsC1ViURH9i60/Yyyld/j5ayKAp692kC+S92tfVb5jsW3m\nMTNkKNkCgYAoFmwQK+RRDJQ+AyddZwJOEW4NA2T5UZckQlFST1KlEN5M1PedVlcd\nQpgGphnrGiVAmz/klyUyUQAZydEGVvpBeFRBMSJjRTPrfQrbW2NR9Y37ziT7fGQI\nN+UC7V30kYVtWzt86H/5cXl0an15eXxK2e/2E2uJOxf1w5EgGsz6wQKBgQCpJIta\ndppX0kBNchiuOkdKjtFNJxsZJ369XkIm/dFkSS5cgb9rc6cSxuiRukqvCILBisPD\n3bbRpaxh31lSuow3vbk4Oibq5NIX1CeZ4HJWnRalka/gWf1O7Tj1X1QVkLl3483D\nRcmspImvx4cUf40kZqD4EuBTO3dg+wdaDfHkWQKBgGgXitYYx/T3qSzUbHnIAjRE\nI8h3J1L+sfgzJDuuhMpa02Koc1CKS1tugrb1ZqPgBAQVx9tGGQ7V7dj9i994eIIS\npue5JWvgexSLlvW+kTSyHi5LHP42xYX0v6x3vbQDh3yEa3CiAKgQnMl/+tP/I0PU\nPBax6tCVBcQG25eWLuDv\n-----END PRIVATE KEY-----\n",
+  "client_email": "scan-ingredients@recipenow-478618.iam.gserviceaccount.com",
+  "client_id": "102439886525386893085",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/scan-ingredients%40recipenow-478618.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
