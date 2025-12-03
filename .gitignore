@@ -32,3 +32,4 @@ __pydantic__/
 
 # 密码
 backend/keys/*.json
+.env
