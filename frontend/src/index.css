@@ -1,0 +1,202 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-primary: #df6b47;
+  --color-primary-dark: #cc5030;
+  --color-sage: #788c61;
+  --color-cream: #fdf9f3;
+  --color-espresso: #4d4540;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  background-color: var(--color-cream);
+  color: var(--color-espresso);
+  min-height: 100vh;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f5e8d3;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d4ab77;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #c08f58;
+}
+
+/* Focus styles */
+*:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Selection */
+::selection {
+  background-color: #f2b6a1;
+  color: var(--color-espresso);
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-terracotta-500 hover:bg-terracotta-600 text-white font-medium 
+           px-6 py-3 rounded-xl transition-all duration-200 
+           hover:shadow-lg hover:shadow-terracotta-500/25
+           active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply bg-sage-500 hover:bg-sage-600 text-white font-medium 
+           px-6 py-3 rounded-xl transition-all duration-200 
+           hover:shadow-lg hover:shadow-sage-500/25
+           active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-outline {
+    @apply border-2 border-terracotta-500 text-terracotta-600 font-medium 
+           px-6 py-3 rounded-xl transition-all duration-200 
+           hover:bg-terracotta-50 active:scale-[0.98];
+  }
+
+  .card {
+    @apply bg-white rounded-2xl shadow-lg shadow-espresso-900/5 
+           border border-cream-200 p-6;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3 rounded-xl border-2 border-cream-300 
+           bg-white text-espresso-800 placeholder-espresso-400
+           focus:border-terracotta-400 focus:ring-0 focus:outline-none
+           transition-colors duration-200;
+  }
+
+  .label {
+    @apply block text-sm font-medium text-espresso-700 mb-2;
+  }
+
+  .chip {
+    @apply inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium
+           bg-cream-200 text-espresso-700 transition-all duration-200;
+  }
+
+  .chip-active {
+    @apply bg-terracotta-500 text-white;
+  }
+
+  .chip-sage {
+    @apply bg-sage-100 text-sage-700;
+  }
+
+  .page-container {
+    @apply min-h-screen pb-24;
+  }
+
+  .page-header {
+    @apply pt-6 pb-4 px-6;
+  }
+
+  .page-title {
+    @apply font-display text-3xl font-semibold text-espresso-800;
+  }
+
+  .section-title {
+    @apply font-display text-xl font-semibold text-espresso-800 mb-4;
+  }
+}
+
+/* Animations */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.4s ease-out forwards;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.3s ease-out forwards;
+}
+
+/* Stagger children animations */
+.stagger-children > * {
+  opacity: 0;
+  animation: slideUp 0.4s ease-out forwards;
+}
+
+.stagger-children > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger-children > *:nth-child(2) { animation-delay: 0.1s; }
+.stagger-children > *:nth-child(3) { animation-delay: 0.15s; }
+.stagger-children > *:nth-child(4) { animation-delay: 0.2s; }
+.stagger-children > *:nth-child(5) { animation-delay: 0.25s; }
+.stagger-children > *:nth-child(6) { animation-delay: 0.3s; }
+.stagger-children > *:nth-child(7) { animation-delay: 0.35s; }
+.stagger-children > *:nth-child(8) { animation-delay: 0.4s; }
+
+/* Glass effect */
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #df6b47 0%, #cc5030 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
