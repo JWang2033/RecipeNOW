@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Login / Register</title>
+</head>
+<body>
+  <h2>Login</h2>
+  <form id="loginForm">
+    <input id="login_phone" placeholder="Phone Number"><br><br>
+    <input id="login_password" type="password" placeholder="Password"><br><br>
+    <button>Login</button>
+  </form>
+
+  <hr>
+
+  <h2>Register</h2>
+  <form id="registerForm">
+    <input id="reg_name" placeholder="Name"><br><br>
+    <input id="reg_phone" placeholder="Phone Number"><br><br>
+    <input id="reg_password" type="password" placeholder="Password"><br><br>
+    <button>Register</button>
+  </form>
+
+<script>
+document.getElementById("loginForm").addEventListener("submit", async (e)=>{
+    e.preventDefault();
+
+    const fd = new FormData();
+    fd.append("username", document.getElementById("login_phone").value);
+    fd.append("password", document.getElementById("login_password").value);
+
+    const res = await fetch("http://localhost:8000/auth/login", {
+        method:"POST",
+        body: fd
+    });
+
+    const data = await res.json();
+    if (data.access_token){
+        localStorage.setItem("token", data.access_token);
+        window.location.href = "page2_upload_or_skip.html";
+    } else alert("Login failed");
+});
+
+document.getElementById("registerForm").addEventListener("submit", async (e)=>{
+    e.preventDefault();
+
+    const payload = {
+        name: document.getElementById("reg_name").value,
+        phone_number: document.getElementById("reg_phone").value,
+        password: document.getElementById("reg_password").value,
+    };
+
+    const res = await fetch("http://localhost:8000/auth/register", {
+        method:"POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+    if (data.id){
+        alert("Registered! Now login.");
+    } else alert("Failed to register");
+});
+</script>
+</body>
+</html>
