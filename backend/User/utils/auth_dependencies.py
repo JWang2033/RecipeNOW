@@ -7,7 +7,7 @@ from backend.User.crud import user_crud
 from backend.User.utils.security import SECRET_KEY, ALGORITHM
 from sqlalchemy.orm import Session
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login/staff")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
 def get_db():
     db = SessionLocal()
