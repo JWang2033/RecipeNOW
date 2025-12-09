@@ -28,7 +28,6 @@ mkdir -p backend/keys
 ```bash
 python3 -m venv venv
 source venv/bin/activate
-pip install --upgrade pip
 pip install -r requirements.txt
 
 cp .env.example .env
@@ -48,16 +47,6 @@ cp .env.example .env
   PY
   ```
   (Creates `data/recipenow.db` with `users`, `pantry_items`, `user_preferences`, etc.)
-- **MySQL via Docker (optional):**
-  ```bash
-  docker run --name recipenow-mysql \
-    -e MYSQL_DATABASE=recipenow \
-    -e MYSQL_USER=user \
-    -e MYSQL_PASSWORD=recipenow \
-    -e MYSQL_ROOT_PASSWORD=root \
-    -p 3309:3306 -d mysql:8
-  ```
-  Update `.env` with matching `MYSQL_*` values (or set `DATABASE_URL=mysql+pymysql://...`) and rerun the bootstrap script above so tables are created in MySQL.
 
 ### 4. Frontend environment
 ```bash
