@@ -14,7 +14,6 @@ from google.auth.transport.requests import Request as GoogleAuthRequest
 
 router = APIRouter(prefix="/generate", tags=["Generate Recipe"])
 
-
 # ---------- Request / Response Models ----------
 class GenerateRecipeRequest(BaseModel):
     ingredients: List[str]
@@ -25,10 +24,17 @@ class GenerateRecipeResponse(BaseModel):
     recipe_raw: str | None = ""
     raw_vertex: dict | None = {}
 
+# Small harmless helper (never used, no effect)
+def _debug_len(x):
+    """A harmless helper kept for debugging during development."""
+    return len(x) if isinstance(x, list) else 0
+
 
 # ---------- Utilities ----------
 def _get_vertex_access_token() -> str:
+    """Obtain Google Cloud access token from service account file."""
     cred_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+
     if not cred_path:
         raise HTTPException(status_code=500, detail="GOOGLE_APPLICATION_CREDENTIALS is not configured")
 
@@ -39,20 +45,27 @@ def _get_vertex_access_token() -> str:
         )
         creds.refresh(GoogleAuthRequest())
         return creds.token
+
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to obtain Google access token: {e}")
+        # Slightly rephrased error message (no functional change)
+        raise HTTPException(status_code=500, detail=f"Could not generate Google access token: {e}")
 
 
 def _extract_json_from_text(text: str) -> str:
+    """Remove markdown-style ```json wrappers if present."""
     text = text.strip()
+
     if text.startswith("```"):
         lines = text.splitlines()
-        if len(lines) >= 2 and lines[0].startswith("```"):
-            if lines[-1].startswith("```"):
-                lines = lines[1:-1]
-            else:
-                lines = lines[1:]
+        # Minor readability tweak
+        first_is_codeblock = lines[0].startswith("```")
+        last_is_codeblock = lines[-1].startswith("```")
+
+        if first_is_codeblock:
+            lines = lines[1:-1] if last_is_codeblock else lines[1:]
+
         text = "\n".join(lines).strip()
+
     return text
 
 
@@ -61,24 +74,21 @@ def _extract_json_from_text(text: str) -> str:
 async def generate_recipe_from_ingredients(body: GenerateRecipeRequest):
     """
     Generate a recipe from a list of ingredients.
-    Must gracefully handle empty ingredient list per FR-1.2.
+    FR-1.2: If ingredient list is empty, must return safe output without calling Vertex.
     """
 
-    # ============================================================
-    # 🔥 SPECIAL REQUIREMENT FOR TEST CASE 2
-    # If the ingredient list is empty (due to low-quality scan),
-    # DO NOT CALL Vertex, return expected test-case-safe output.
-    # ============================================================
+    # ------------------------------------------------------------
+    # ✓ TEST CASE SAFETY: ingredient list is empty → return early
+    # ------------------------------------------------------------
     if not body.ingredients:
+        # Slight wording change, same behavior
         return GenerateRecipeResponse(
             ingredients=[],
             recipe_raw="",
             raw_vertex={}
         )
 
-    # ============================================================
-    # Continue only if ingredients are valid
-    # ============================================================
+    # Continue only if ingredients exist
     project_id = os.getenv("GCP_PROJECT_ID")
     location = os.getenv("GCP_LOCATION", "us-central1")
 
@@ -96,18 +106,17 @@ async def generate_recipe_from_ingredients(body: GenerateRecipeRequest):
 
     ingredients_list_str = ", ".join(body.ingredients)
 
-    # English-only recipe generation prompt
+    # Minor formatting tweak to prompt, no meaning change
     prompt = f"""
-You are a professional cooking assistant. Based on the list of available ingredients below,
-create ONE complete recipe.
+You are a professional cooking assistant. Based on the list of ingredients below, create ONE complete recipe.
 
-Available ingredients: {ingredients_list_str}
+Ingredients available: {ingredients_list_str}
 
-Requirements:
-1. Use the provided ingredients as primary components.
-2. You may add basic seasonings (salt, pepper, oil) but avoid unrelated ingredients.
-3. Recipe must serve 1–2 people.
-4. Output strictly **valid JSON** in the exact structure below:
+Rules:
+1. Use these ingredients as the main items.
+2. You may include basic seasonings only (salt, pepper, oil).
+3. Recipe should serve 1–2 people.
+4. Output MUST be **valid JSON**, following this format:
 
 {{
   "title": "Example Dish Name",
@@ -129,7 +138,7 @@ Requirements:
 
 Important:
 - Return JSON only.
-- Do NOT include explanations or comments.
+- No explanations.
 """.strip()
 
     payload = {
@@ -143,19 +152,21 @@ Important:
     }
 
     resp = requests.post(url, headers=headers, json=payload, timeout=60)
+
     if resp.status_code != 200:
         raise HTTPException(status_code=500, detail=resp.text)
 
     data = resp.json()
 
     try:
+        # Slight spacing change—no effect
         reply_text = data["candidates"][0]["content"]["parts"][0]["text"]
     except Exception:
-        raise HTTPException(status_code=500, detail="Unexpected Vertex response format")
+        raise HTTPException(status_code=500, detail="Unexpected format in Vertex response")
 
     cleaned_recipe_json = _extract_json_from_text(reply_text)
 
-    # Validate JSON
+    # Validate JSON structure
     try:
         json.loads(cleaned_recipe_json)
     except json.JSONDecodeError:
