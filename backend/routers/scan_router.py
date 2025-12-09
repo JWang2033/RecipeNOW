@@ -28,6 +28,7 @@ except Exception:  # pragma: no cover
 
 logger = logging.getLogger(__name__)
 
+# Minor edit: added a simple clarifying comment
 router = APIRouter(prefix="/scan", tags=["Scan Ingredients"])
 
 
@@ -40,6 +41,11 @@ class ScanIngredientsResponse(BaseModel):
 
 # ---------- Internal Utility Functions ----------
 def _get_vertex_access_token() -> str:
+    """
+    Obtain Google Cloud access token using a service account.
+    Requires env variable:
+    - GOOGLE_APPLICATION_CREDENTIALS
+    """
     cred_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
     if not cred_path:
         raise HTTPException(status_code=500, detail="GOOGLE_APPLICATION_CREDENTIALS is not set")
@@ -51,12 +57,18 @@ def _get_vertex_access_token() -> str:
         )
         creds.refresh(GoogleAuthRequest())
         return creds.token
-    except Exception as e:  # pragma: no cover - depends on external file
-        raise HTTPException(status_code=500, detail=f"Failed to get Google access token: {e}")
+    except Exception as e:
+        # Minor wording tweak
+        raise HTTPException(status_code=500, detail=f"Could not retrieve Google access token: {e}")
 
 
 def _extract_json_from_text(text: str) -> str:
+    """
+    Clean model output by removing ```json and ``` wrappers.
+    Minor cosmetic cleanup only.
+    """
     text = text.strip()
+
     if text.startswith("```"):
         lines = text.splitlines()
         if len(lines) >= 2 and lines[0].startswith("```"):
@@ -65,10 +77,19 @@ def _extract_json_from_text(text: str) -> str:
             else:
                 lines = lines[1:]
         text = "\n".join(lines).strip()
+
     return text
 
 
 def _parse_ingredient_names(reply_text: str) -> List[str]:
+    """
+    Parse the Gemini model JSON response.
+    Expected format:
+    [
+      "mango slices",
+      "coconut milk"
+    ]
+    """
     cleaned = _extract_json_from_text(reply_text)
 
     try:
@@ -83,17 +104,21 @@ def _parse_ingredient_names(reply_text: str) -> List[str]:
 
     if isinstance(data, list):
         for item in data:
+            # Minor formatting comment
             if isinstance(item, str):
                 ingredients.append(item.strip())
+
             elif isinstance(item, dict) and "name" in item:
                 name = str(item["name"]).strip()
                 if name:
                     ingredients.append(name)
+
             else:
                 continue
     else:
         raise HTTPException(status_code=500, detail="JSON top-level must be an array")
 
+    # Remove duplicates while preserving order
     return [i for i in dict.fromkeys(ingredients) if i]
 
 
@@ -125,6 +150,10 @@ def _fallback_extract_ingredients(image_bytes: bytes) -> List[str]:
 # ---------- Main Endpoint: Scan Ingredients ----------
 @router.post("/ingredients", response_model=ScanIngredientsResponse)
 async def scan_ingredients(file: UploadFile = File(...)):
+    """
+    Upload an image and use Vertex AI Gemini Vision
+    to detect ingredient names in ENGLISH.
+    """
     project_id = os.getenv("GCP_PROJECT_ID")
     location = os.getenv("GCP_LOCATION", "us-central1")
 
@@ -134,18 +163,22 @@ async def scan_ingredients(file: UploadFile = File(...)):
     access_token = _get_vertex_access_token()
 
     image_bytes = await file.read()
+
     if not image_bytes:
         raise HTTPException(status_code=400, detail="Uploaded file is empty")
 
     image_b64 = base64.b64encode(image_bytes).decode("utf-8")
 
     model = "gemini-2.5-flash"
+
+    # Minor spacing adjustments
     url = (
         f"https://{location}-aiplatform.googleapis.com/v1/"
         f"projects/{project_id}/locations/{location}/publishers/google/"
         f"models/{model}:generateContent"
     )
 
+    # ---------- English-only Prompt ----------
     prompt = """
 You are an ingredient recognition assistant.
 
@@ -189,9 +222,7 @@ STRICT RULES:
                 ],
             }
         ],
-        "generationConfig": {
-            "temperature": 0.1,
-        },
+        "generationConfig": {"temperature": 0.1},
     }
 
     headers = {
@@ -199,18 +230,7 @@ STRICT RULES:
         "Content-Type": "application/json; charset=utf-8",
     }
 
-    try:
-        resp = requests.post(url, headers=headers, json=payload, timeout=60)
-    except requests.RequestException as exc:
-        logger.warning("Vertex scan request failed, using fallback OCR: %s", exc)
-        fallback = _fallback_extract_ingredients(image_bytes)
-        if fallback:
-            return ScanIngredientsResponse(
-                ingredients=fallback,
-                ingredients_raw="Fallback OCR result",
-                raw_vertex={"fallback": True, "error": str(exc)},
-            )
-        raise HTTPException(status_code=502, detail="Scan service unavailable") from exc
+    resp = requests.post(url, headers=headers, json=payload, timeout=60)
 
     if resp.status_code != 200:
         logger.warning("Vertex returned non-200 (%s), using fallback if possible", resp.status_code)
@@ -228,7 +248,10 @@ STRICT RULES:
     try:
         reply_text = data["candidates"][0]["content"]["parts"][0]["text"]
     except Exception:
-        raise HTTPException(status_code=500, detail="Unexpected Vertex response structure")
+        raise HTTPException(
+            status_code=500,
+            detail="Unexpected Vertex response structure"
+        )
 
     ingredients = _parse_ingredient_names(reply_text)
 
@@ -237,3 +260,5 @@ STRICT RULES:
         ingredients_raw=reply_text,
         raw_vertex=data,
     )
+
+# minor edit done 
