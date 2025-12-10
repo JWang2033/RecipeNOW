@@ -160,12 +160,23 @@ async def scan_ingredients(file: UploadFile = File(...)):
     if not project_id:
         raise HTTPException(status_code=500, detail="GCP_PROJECT_ID is not set")
 
-    access_token = _get_vertex_access_token()
-
     image_bytes = await file.read()
 
     if not image_bytes:
         raise HTTPException(status_code=400, detail="Uploaded file is empty")
+
+    try:
+        access_token = _get_vertex_access_token()
+    except HTTPException as exc:
+        logger.warning("Failed to obtain Vertex token: %s", exc.detail)
+        fallback = _fallback_extract_ingredients(image_bytes)
+        if fallback:
+            return ScanIngredientsResponse(
+                ingredients=fallback,
+                ingredients_raw="Fallback OCR result",
+                raw_vertex={"fallback": True, "error": exc.detail},
+            )
+        raise HTTPException(status_code=502, detail=f"Vertex token unavailable: {exc.detail}")
 
     image_b64 = base64.b64encode(image_bytes).decode("utf-8")
 
@@ -230,7 +241,18 @@ STRICT RULES:
         "Content-Type": "application/json; charset=utf-8",
     }
 
-    resp = requests.post(url, headers=headers, json=payload, timeout=60)
+    try:
+        resp = requests.post(url, headers=headers, json=payload, timeout=60)
+    except requests.RequestException as exc:  # network failure or similar
+        logger.warning("Vertex request failed (%s), falling back to OCR", exc)
+        fallback = _fallback_extract_ingredients(image_bytes)
+        if fallback:
+            return ScanIngredientsResponse(
+                ingredients=fallback,
+                ingredients_raw="Fallback OCR result",
+                raw_vertex={"fallback": True, "error": str(exc)},
+            )
+        raise HTTPException(status_code=502, detail=f"Vertex request failed: {exc}")
 
     if resp.status_code != 200:
         logger.warning("Vertex returned non-200 (%s), using fallback if possible", resp.status_code)
