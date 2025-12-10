@@ -40,23 +40,31 @@ source venv/bin/activate
 # install backend dependencies
 ./venv/bin/pip install -r requirements.txt
 
+# ===========================
+# 3. Initialize Database
+# ===========================
+python3 backend/init_db.py
+
 
 # ==================================
-# 3. Run Backend (FastAPI + Uvicorn)
+# 4. Run Backend (FastAPI + Uvicorn)
 # ==================================
 ./venv/bin/uvicorn main:app --reload
 
 
 # ==================================
-# 4. Setup Frontend
+# 5. Setup Frontend
 # ==================================
 
 # (In another terminal)
 cd frontend
 
-npm install           # 安装前端依赖
+# Remove existing node_modules if corrupted
+rm -rf node_modules package-lock.json
 
-npm run dev           # 启动前端开发服务器
+npm install           # install frontend dependencies
+
+npm run dev           # start frontend dev server
 
 ```
 
