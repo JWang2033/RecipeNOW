@@ -9,6 +9,13 @@ This will import the SQLAlchemy `engine` and `Base` from
 `backend.User.database`, import model modules so they register with the
 metadata, then call `Base.metadata.create_all(engine)`.
 """
+import sys
+from pathlib import Path
+
+# Add project root to Python path
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
+
 from backend.User.database import engine, Base
 
 # Import models so they are registered on Base.metadata

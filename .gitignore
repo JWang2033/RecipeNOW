@@ -5,7 +5,10 @@ __pycache__/
 
 # Virtual environment
 venv/
-frontend/node_ modules/.
+
+# Node.js dependencies
+node_modules/
+package-lock.json
 
 # IDE settings
 .idea/
