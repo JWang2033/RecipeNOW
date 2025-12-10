@@ -17,28 +17,47 @@ Users simply input the ingredients they want to use, and the app will call the *
 ## 🛠️ Installation
 
 ```bash
-
-# Clone API Keys
+# ===========================
+# 1. Clone Backend
+# ===========================
 mkdir -p backend/keys
-#拖入下载的scan-ingredients.json
+# <-- drag scan-ingredients.json into backend/keys/ -->
 
-
-# Clone the repository
 git clone https://github.com/yourusername/recipenow.git
 cd recipenow
 
-# Create venv
+# ===========================
+# 2. Python venv Setup
+# ===========================
 python3 -m venv venv
 
-# Activate venv（Mac/Linux）
+# activate venv
 source venv/bin/activate
 
-# install dependencies
-./venv/bin/pip install -r requirements.txt
-#自己电脑装的pip
+# upgrade pip
+./venv/bin/pip install --upgrade pip
 
-# load
+# install backend dependencies
+./venv/bin/pip install -r requirements.txt
+
+
+# ==================================
+# 3. Run Backend (FastAPI + Uvicorn)
+# ==================================
 ./venv/bin/uvicorn main:app --reload
+
+
+# ==================================
+# 4. Setup Frontend
+# ==================================
+
+# (In another terminal)
+cd frontend
+
+npm install           # 安装前端依赖
+
+npm run dev           # 启动前端开发服务器
+
 ```
 
 ## 📝 File Structure
