@@ -84,27 +84,6 @@ export const authApi = {
     return response.json();
   },
   
-  loginWith2FA: async (phoneNumber: string, password: string, totpCode: string): Promise<AuthResponse> => {
-    const response = await fetch(`${API_BASE}/auth/login/2fa`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        phone_number: phoneNumber,
-        password: password,
-        totp_code: totpCode,
-      }),
-    });
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new ApiError(response.status, errorText);
-    }
-    
-    return response.json();
-  },
-  
   register: async (phoneNumber: string, username: string, password: string) => {
     return fetchApi('/auth/register', {
       method: 'POST',
@@ -113,33 +92,6 @@ export const authApi = {
         name: username, 
         password 
       }),
-    });
-  },
-};
-
-// Two-Factor Authentication endpoints
-export const twoFAApi = {
-  getStatus: async (): Promise<TwoFAStatusResponse> => {
-    return fetchApi('/2fa/status');
-  },
-  
-  setup: async (): Promise<TwoFASetupResponse> => {
-    return fetchApi('/2fa/setup', {
-      method: 'POST',
-    });
-  },
-  
-  verify: async (code: string): Promise<{ message: string }> => {
-    return fetchApi('/2fa/verify', {
-      method: 'POST',
-      body: JSON.stringify({ code }),
-    });
-  },
-  
-  disable: async (code: string): Promise<{ message: string }> => {
-    return fetchApi('/2fa/disable', {
-      method: 'POST',
-      body: JSON.stringify({ code }),
     });
   },
 };
@@ -172,11 +124,19 @@ export const scanApi = {
 };
 
 // Recipe generation endpoints
+type RecipePreferencesPayload = {
+  ingredients: string[];
+  diets?: string[];
+  allergens?: string[];
+  max_cooking_time?: number | null;
+  difficulty?: string | null;
+};
+
 export const recipeApi = {
-  generateRecipe: async (ingredients: string[]): Promise<GenerateRecipeResponse> => {
+  generateRecipe: async (payload: RecipePreferencesPayload): Promise<GenerateRecipeResponse> => {
     return fetchApi('/generate/ingredients', {
       method: 'POST',
-      body: JSON.stringify({ ingredients }),
+      body: JSON.stringify(payload),
     });
   },
 };

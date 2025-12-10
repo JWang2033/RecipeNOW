@@ -40,6 +40,7 @@ def login_user(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid phone number or password",
         )
+
     # JWT 中的 sub 用手机号
     access_token = create_access_token(data={"sub": user.phone_number, "role": "user"})
     return {"access_token": access_token, "token_type": "bearer"}
@@ -60,3 +61,4 @@ def register_user(user: user_schemas.UserCreate, db: Session = Depends(get_db)):
     hashed_password = get_password_hash(user.password)
     created = user_crud.create_user_with_hashed_password(db, user, hashed_password)
     return created
+

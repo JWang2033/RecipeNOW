@@ -9,7 +9,6 @@ import PantryPage from './pages/PantryPage';
 import RecipePage from './pages/RecipePage';
 import ShoppingListPage from './pages/ShoppingListPage';
 import PreferencesPage from './pages/PreferencesPage';
-import SecurityPage from './pages/SecurityPage';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
@@ -48,7 +47,6 @@ function App() {
                 <Route path="/recipe" element={<RecipePage />} />
                 <Route path="/shopping-list" element={<ShoppingListPage />} />
                 <Route path="/preferences" element={<PreferencesPage />} />
-                <Route path="/security" element={<SecurityPage />} />
               </Routes>
             </Layout>
           </ProtectedRoute>
@@ -59,4 +57,3 @@ function App() {
 }
 
 export default App;
-

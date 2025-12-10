@@ -41,13 +41,12 @@ export default function RecipePage() {
     try {
       const ingredientNames = pantryItems.map((item) => item.name);
       
-      // Include preferences in the API call
       const response = await recipeApi.generateRecipe({
         ingredients: ingredientNames,
-        diets: preferences.diets.length > 0 ? preferences.diets : undefined,
-        allergens: preferences.allergens.length > 0 ? preferences.allergens : undefined,
-        max_cooking_time: preferences.maxCookingTime || null,
-        difficulty: preferences.difficulty || null,
+        diets: preferences.diets.length ? preferences.diets : undefined,
+        allergens: preferences.allergens.length ? preferences.allergens : undefined,
+        max_cooking_time: preferences.maxCookingTime ?? undefined,
+        difficulty: preferences.difficulty || undefined,
       });
       
       if (response.recipe_raw) {

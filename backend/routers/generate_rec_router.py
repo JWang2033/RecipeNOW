@@ -2,11 +2,11 @@
 
 import os
 import json
-from typing import List
+from typing import List, Optional
 
 import requests
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from google.oauth2 import service_account
 from google.auth.transport.requests import Request as GoogleAuthRequest
@@ -17,6 +17,10 @@ router = APIRouter(prefix="/generate", tags=["Generate Recipe"])
 # ---------- Request / Response Models ----------
 class GenerateRecipeRequest(BaseModel):
     ingredients: List[str]
+    diets: List[str] = Field(default_factory=list)
+    allergens: List[str] = Field(default_factory=list)
+    max_cooking_time: Optional[int] = None
+    difficulty: Optional[str] = None
 
 
 class GenerateRecipeResponse(BaseModel):
@@ -105,12 +109,32 @@ async def generate_recipe_from_ingredients(body: GenerateRecipeRequest):
     )
 
     ingredients_list_str = ", ".join(body.ingredients)
+    preference_lines: List[str] = []
+    if body.diets:
+        preference_lines.append(
+            "Dietary requirements: " + ", ".join(body.diets) + " (must follow these strictly)."
+        )
+    if body.allergens:
+        preference_lines.append(
+            "Never include ingredients that contain: " + ", ".join(body.allergens) + "."
+        )
+    if body.max_cooking_time:
+        preference_lines.append(
+            f"Total cooking time must be <= {body.max_cooking_time} minutes."
+        )
+    if body.difficulty:
+        preference_lines.append(f"Overall difficulty should be {body.difficulty.lower()}.")
+
+    preference_text = "\n".join(preference_lines) if preference_lines else "No extra dietary restrictions."
 
     # Minor formatting tweak to prompt, no meaning change
     prompt = f"""
 You are a professional cooking assistant. Based on the list of ingredients below, create ONE complete recipe.
 
 Ingredients available: {ingredients_list_str}
+
+User preferences / restrictions:
+{preference_text}
 
 Rules:
 1. Use these ingredients as the main items.

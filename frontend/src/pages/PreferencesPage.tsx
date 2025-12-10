@@ -8,9 +8,7 @@ import {
   ChefHat,
   RotateCcw,
   Check,
-  Shield,
   LogOut,
-  ChevronRight
 } from 'lucide-react';
 import { usePreferences } from '../contexts/PreferencesContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -319,23 +317,6 @@ export default function PreferencesPage() {
             Account Settings
           </h3>
           
-          {/* Security Link */}
-          <Link 
-            to="/security"
-            className="card hover:shadow-lg transition-all group flex items-center justify-between"
-          >
-            <div className="flex items-center gap-4">
-              <div className="p-2 bg-sage-100 rounded-lg group-hover:scale-110 transition-transform">
-                <Shield size={20} className="text-sage-600" />
-              </div>
-              <div>
-                <h4 className="font-medium text-espresso-800">Security</h4>
-                <p className="text-sm text-espresso-500">Two-factor authentication</p>
-              </div>
-            </div>
-            <ChevronRight size={20} className="text-espresso-400" />
-          </Link>
-
           {/* Logout Button */}
           <button
             onClick={() => {
@@ -358,4 +339,3 @@ export default function PreferencesPage() {
     </div>
   );
 }
-
