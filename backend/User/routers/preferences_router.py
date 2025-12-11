@@ -30,7 +30,7 @@ def get_preferences(
 ):
     prefs = preferences_crud.get_preferences(db, current_user.id)
     if not prefs:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No preferences saved")
+        prefs = preferences_crud.upsert_preferences(db, user_id=current_user.id)
     return _to_response(prefs)
 
 

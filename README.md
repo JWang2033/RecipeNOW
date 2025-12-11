@@ -14,77 +14,67 @@ Users simply input the ingredients they want to use, and the app will call the *
 
 ---
 
-## 🛠️ Installation & Startup
+## 🛠️ Installation
 
-### 1. Clone and prepare keys
+### Prerequisites
+
+#### 1. Python 3.11+
+Check if Python is installed:
 ```bash
-git clone https://github.com/yourusername/recipenow.git
-cd recipenow
+python3 --version  # Should show 3.11 or higher
+```
+
+#### 2. Node.js 18+ and npm
+Check if Node.js and npm are installed:
+```bash
+node --version  # Should show v18.0.0 or higher
+npm --version   # Should show 9.0.0 or higher
+```
+
+### Installation Steps
+
+```bash
+# ===========================
+# 1. Clone Repository
+# ===========================
+git clone https://github.com/JWang2033/RecipeNOW.git
+cd RecipeNOW
+
+# ===========================
+# 2. Configure Environment
+# ===========================
+# Add your Google Cloud credentials
 mkdir -p backend/keys
-# copy scan-ingredients.json into backend/keys (Google service account)
-```
+# <-- Place scan-ingredients.json into backend/keys/ -->
 
-### 2. Backend environment
-```bash
+# ===========================
+# 3. Backend Setup
+# ===========================
 python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-cp .env.example .env
-# Edit .env:
-# - Set DEEPSEEK_API_KEY, GCP_PROJECT_ID, GCP_LOCATION, GOOGLE_APPLICATION_CREDENTIALS
-# - For local dev keep DATABASE_URL=sqlite:///./data/recipenow.db
-#   (or fill MYSQL_* if you’ll use MySQL/Docker)
-```
+./venv/bin/pip install --upgrade pip
+./venv/bin/pip install -r requirements.txt
 
-### 3. Database choices
-- **SQLite (default):** nothing else to install. On the first run execute
-  ```bash
-  python - <<'PY'
-  from backend.User.database import Base, engine
-  import backend.User.models
-  Base.metadata.create_all(bind=engine)
-  PY
-  ```
-  (Creates `data/recipenow.db` with `users`, `pantry_items`, `user_preferences`, etc.)
+# ===========================
+# 4. Run Backend
+# ===========================
+uvicorn main:app --reload
+# Backend will run at http://localhost:8000
 
-### 4. Frontend environment
-```bash
+# ===========================
+# 5. Frontend Setup (New Terminal)
+# ===========================
 cd frontend
 npm install
-cp .env.example .env
-# Ensure .env contains:
-# VITE_API_BASE_URL=http://127.0.0.1:8000/api
-# VITE_PROXY_TARGET=http://127.0.0.1:8000
-cd ..
-```
-
-### 5. Running locally
-```bash
-# Terminal 1 (backend)
-source venv/bin/activate
-uvicorn main:app --reload
-
-# Terminal 2 (frontend)
-cd frontend
 npm run dev
+# Frontend will run at http://localhost:5173
 ```
-Visit the URL printed by Vite (usually http://localhost:3000). All API calls go through `/api/*` and hit FastAPI on port 8000. If the scan endpoint cannot reach Vertex, it automatically falls back to offline OCR (PIL + pytesseract) so testing continues without cloud access.
 
-### 6. Quick verification checklist
-1. Register a user → `POST /api/auth/register` returns 200.
-2. Log in → `POST /api/auth/login` returns a JWT; localStorage contains `token`.
-3. Preferences page → GET/PUT `/api/preferences/` return 200 and persist diets/allergens/time/difficulty.
-4. Pantry page → CRUD endpoints under `/api/pantry/` succeed.
-5. Scan page → `/api/scan/ingredients` returns either Vertex data or the fallback OCR result (no frontend error).
-6. Recipe/shopping list → `/api/generate/ingredients` and `/api/shopping-list/generate`.
-
-### 7. Automated tests
-```bash
-source venv/bin/activate
-python -m pytest
-```
-The suite mocks external calls so it runs offline.
+### ⚠️ Important Notes
+- **No database initialization needed!** The database is already set up in the cloud.
+- **Do NOT run** `backend/init_db.py` unless you're setting up a new database.
+- All team members share the same cloud database.
 
 ## 📝 File Structure
 <!-- tree:start -->

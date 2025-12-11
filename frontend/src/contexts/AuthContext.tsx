@@ -1,16 +1,10 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { authApi } from '../services/api';
 
-interface LoginResult {
-  success: boolean;
-  requires2FA?: boolean;
-}
-
 interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (phoneNumber: string, password: string) => Promise<LoginResult>;
-  loginWith2FA: (phoneNumber: string, password: string, totpCode: string) => Promise<void>;
+  login: (phoneNumber: string, password: string) => Promise<void>;
   register: (phoneNumber: string, username: string, password: string) => Promise<void>;
   logout: () => void;
 }
@@ -27,25 +21,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(false);
   }, []);
 
-  const login = async (phoneNumber: string, password: string): Promise<LoginResult> => {
+  const login = async (phoneNumber: string, password: string): Promise<void> => {
     const response = await authApi.login(phoneNumber, password);
-    
-    // Check if 2FA is required
-    if (response.requires_2fa) {
-      return { success: false, requires2FA: true };
-    }
-    
-    // Normal login - save token
-    if (response.access_token) {
-      localStorage.setItem('token', response.access_token);
-      setIsAuthenticated(true);
-    }
-    
-    return { success: true };
-  };
 
-  const loginWith2FA = async (phoneNumber: string, password: string, totpCode: string) => {
-    const response = await authApi.loginWith2FA(phoneNumber, password, totpCode);
+    if (!response.access_token) {
+      throw new Error('Login failed');
+    }
+
     localStorage.setItem('token', response.access_token);
     setIsAuthenticated(true);
   };
@@ -62,7 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, isLoading, login, loginWith2FA, register, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, isLoading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );
@@ -75,4 +57,3 @@ export function useAuth() {
   }
   return context;
 }
-

@@ -1,13 +1,13 @@
 # backend/User/models/user.py
 
-from sqlalchemy import Column, BigInteger, String, Text, DateTime, func
+from sqlalchemy import Column, Integer, String, Text, DateTime, func
 from backend.User.database import Base
 
 
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(BigInteger, primary_key=True, index=True, autoincrement=True)
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
 
     # Name：不可空，可重复
     name = Column(String(100), nullable=False)
