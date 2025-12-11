@@ -244,19 +244,17 @@ export default function PantryPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 flex items-end justify-center z-50 p-4"
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
             onClick={() => setShowAddModal(false)}
           >
             <motion.div
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="w-full max-w-lg bg-white rounded-t-3xl p-6"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="w-full max-w-lg bg-white rounded-2xl p-6"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="w-12 h-1.5 bg-cream-300 rounded-full mx-auto mb-6" />
-              
               <h3 className="font-display text-xl font-semibold text-espresso-800 mb-4">
                 Add Ingredient
               </h3>
