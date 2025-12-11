@@ -1,0 +1,18 @@
+[run]
+omit = 
+    backend/init_db.py
+    backend/User/database.py
+    backend/User/routers/pantry_router.py
+    backend/User/routers/preferences_router.py
+    backend/routers/scan_router.py
+    */tests/*
+    */__pycache__/*
+    venv/*
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    raise NotImplementedError
+    if __name__ == .__main__.
+
