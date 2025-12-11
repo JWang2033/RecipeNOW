@@ -43,7 +43,22 @@ async function fetchApi<T>(
     throw new ApiError(response.status, errorText);
   }
 
-  return response.json();
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
+  const contentType = response.headers.get('content-type') ?? '';
+  const responseText = await response.text();
+
+  if (!responseText) {
+    return undefined as T;
+  }
+
+  if (contentType.includes('application/json')) {
+    return JSON.parse(responseText) as T;
+  }
+
+  return responseText as unknown as T;
 }
 
 // Auth response types
