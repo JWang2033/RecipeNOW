@@ -74,7 +74,7 @@ npm run dev
 
 ### ⚠️ Important Notes
 - **No database initialization needed!** The database is already set up in the cloud.
-- **Do NOT run** `backend/init_db.py` unless you're setting up a new database.
+- **Do NOT run** `backend/init_db.py` .
 - All team members share the same cloud database.
 
 ## 📝 File Structure
