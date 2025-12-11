@@ -45,7 +45,8 @@ cd RecipeNOW
 # ===========================
 # Add your Google Cloud credentials
 mkdir -p backend/keys
-# <-- Place scan-ingredients.json into backend/keys/ -->
+touch backend/keys/scan-ingredients.json
+# <-- Copy Google Gemini API KEY  into scan-ingredients.json -->
 
 # ===========================
 # 3. Backend Setup
