@@ -20,15 +20,24 @@ from backend.User.database import engine, Base
 
 # Import models so they are registered on Base.metadata
 import backend.User.models.user  # noqa: F401
+import backend.User.models.pantry_item  # noqa: F401
+import backend.User.models.preferences  # noqa: F401
 
 
 def init_db():
+    print("正在创建数据库表...")
     Base.metadata.create_all(bind=engine)
     try:
         url = engine.url
     except Exception:
         url = str(engine)
-    print("Initialized database for:", url)
+    print(f"✅ 数据库初始化完成！")
+    print(f"数据库连接: {url}")
+
+    # 打印创建的表
+    print("\n创建的表:")
+    for table in Base.metadata.sorted_tables:
+        print(f"  - {table.name}")
 
 
 if __name__ == "__main__":

@@ -16,57 +16,65 @@ Users simply input the ingredients they want to use, and the app will call the *
 
 ## 🛠️ Installation
 
+### Prerequisites
+
+#### 1. Python 3.11+
+Check if Python is installed:
+```bash
+python3 --version  # Should show 3.11 or higher
+```
+
+#### 2. Node.js 18+ and npm
+Check if Node.js and npm are installed:
+```bash
+node --version  # Should show v18.0.0 or higher
+npm --version   # Should show 9.0.0 or higher
+```
+
+### Installation Steps
+
 ```bash
 # ===========================
-# 1. Clone Backend
+# 1. Clone Repository
 # ===========================
+git clone https://github.com/JWang2033/RecipeNOW.git
+cd RecipeNOW
+
+# ===========================
+# 2. Configure Environment
+# ===========================
+# Add your Google Cloud credentials
 mkdir -p backend/keys
-# <-- drag scan-ingredients.json into backend/keys/ -->
-
-git clone https://github.com/yourusername/recipenow.git
-cd recipenow
+# <-- Place scan-ingredients.json into backend/keys/ -->
 
 # ===========================
-# 2. Python venv Setup
+# 3. Backend Setup
 # ===========================
 python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# activate venv
-source venv/bin/activate
-
-# upgrade pip
 ./venv/bin/pip install --upgrade pip
-
-# install backend dependencies
 ./venv/bin/pip install -r requirements.txt
 
 # ===========================
-# 3. Initialize Database
+# 4. Run Backend
 # ===========================
-python3 backend/init_db.py
+uvicorn main:app --reload
+# Backend will run at http://localhost:8000
 
-
-# ==================================
-# 4. Run Backend (FastAPI + Uvicorn)
-# ==================================
-./venv/bin/uvicorn main:app --reload
-
-
-# ==================================
-# 5. Setup Frontend
-# ==================================
-
-# (In another terminal)
+# ===========================
+# 5. Frontend Setup (New Terminal)
+# ===========================
 cd frontend
-
-# Remove existing node_modules if corrupted
-rm -rf node_modules package-lock.json
-
-npm install           # install frontend dependencies
-
-npm run dev           # start frontend dev server
-
+npm install
+npm run dev
+# Frontend will run at http://localhost:5173
 ```
+
+### ⚠️ Important Notes
+- **No database initialization needed!** The database is already set up in the cloud.
+- **Do NOT run** `backend/init_db.py` unless you're setting up a new database.
+- All team members share the same cloud database.
 
 ## 📝 File Structure
 <!-- tree:start -->
