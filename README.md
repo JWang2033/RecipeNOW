@@ -8,7 +8,7 @@ Users simply input the ingredients they want to use, and the app will call the *
 
 ## ✨ Features
 - Input any list of ingredients.
-- Automatically generate recipe suggestions using **DeepSeek API**.
+- Automatically generate recipe suggestions using **Google GEMINI API**.
 - Provide step-by-step cooking instructions.
 - Suggest possible variations and tips.
 
